@@ -1,7 +1,10 @@
+import Dashboard from './Components/Dashboard'
+import MainLayout from './Components/MainLayout'
+
 export default function App() {
   return (
-    <h1 className="text-xl font-bold">
-      Hello world!
-    </h1>
+    <MainLayout>
+      <Dashboard />
+    </MainLayout>
   )
 }
