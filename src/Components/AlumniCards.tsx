@@ -1,4 +1,5 @@
 import React from 'react';
+import { ExternalLink, GraduationCap, Briefcase, Mail } from 'lucide-react';
 
 interface Alumni {
     NAME: string;
@@ -11,53 +12,79 @@ interface Alumni {
     BRANCH?: string | null;
 }
 
-
 const AlumniCard: React.FC<Alumni> = ({
     NAME,
     COMPANY,
     BATCH,
     PIC,
     PROFILE,
+    EMAIL,
     FIELD,
-    BRANCH
+    BRANCH,
 }) => {
     return (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-            <div className="relative">
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden w-full max-w-sm mx-auto transition-shadow duration-300">
+            {/* Profile Picture */}
+            <div className="flex justify-center bg-gray-50 pt-6 pb-4">
                 <img
                     src={PIC}
                     alt={NAME}
-                    className="w-full h-48 object-cover object-center"
+                    className="rounded-full w-32 h-32 object-cover border-3 border-gray-200 shadow-md"
                 />
-                <div className="absolute top-4 right-4 bg-white/80 rounded-full p-2">
-                    <span className="text-sm font-semibold text-teal-800">
-                        Batch {BATCH}
-                    </span>
-                </div>
             </div>
-            <div className="p-5">
-                <h3 className="text-xl font-bold text-teal-900 mb-2">{NAME}</h3>
-                <p className="text-gray-600 text-sm mb-3">{COMPANY}</p>
+
+            {/* Card Content */}
+            <div className="p-6 text-center">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    {NAME}
+                </h3>
                 
-                <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full">
+                <div className="space-y-2 mb-4">
+                    <p className="text-gray-600 text-sm flex items-center justify-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gray-500" />
+                        {COMPANY}
+                    </p>
+                    
+                    <div className="flex justify-center items-center gap-2">
+                        <span className="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                            <GraduationCap className="w-4 h-4 text-gray-600" />
+                            Batch {BATCH}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Field and Branch */}
+                <div className="flex justify-center flex-wrap gap-2 mb-4">
+                    <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
                         {FIELD}
                     </span>
                     {BRANCH && (
-                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
                             {BRANCH}
                         </span>
                     )}
                 </div>
 
-                <a 
-                    href={PROFILE} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600 transition-colors"
-                >
-                    View Profile
-                </a>
+                {/* Action Buttons */}
+                <div className="flex justify-center space-x-2">
+                    <a
+                        href={PROFILE}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 inline-flex items-center justify-center bg-gray-800 text-white py-2 rounded-md hover:bg-gray-700 transition-colors"
+                    >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Profile
+                    </a>
+                    
+                    <a
+                        href={`mailto:${EMAIL}`}
+                        className="bg-gray-100 text-gray-700 p-2 rounded-md hover:bg-gray-200 transition-colors"
+                        title="Send Email"
+                    >
+                        <Mail className="w-4 h-4" />
+                    </a>
+                </div>
             </div>
         </div>
     );
