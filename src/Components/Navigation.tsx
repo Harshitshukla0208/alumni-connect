@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Menu, Loader2 } from 'lucide-react';
@@ -13,29 +13,23 @@ const Navbar: React.FC<NavbarProps> = ({
     onSearchToggle,
     onMobileSidebarToggle,
 }) => {
-    const { setSearchResults } = useSearchContext();
+    const {
+        setSearchResults,
+        searchQuery,
+        setSearchQuery,
+        isSearching,
+        setIsSearching
+    } = useSearchContext();
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
-    const searchContainerRef = useRef<HTMLDivElement>(null);
-    const searchInputRef = useRef<HTMLInputElement>(null); // New ref for search input
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Advanced debounce with cancellation
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedQuery(searchQuery);
-            setSearchError(null);
-        }, 500);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    // Advanced search handler with error handling and loading state
-    const handleSearch = useCallback(async () => {
-        if (!debouncedQuery.trim()) {
+    const handleSearch = useCallback(async (query: string) => {
+        if (!query.trim()) {
             setSearchResults([]);
             return;
         }
@@ -45,53 +39,113 @@ const Navbar: React.FC<NavbarProps> = ({
 
         try {
             const response = await axios.get('http://localhost:3001/search', {
-                params: { q: debouncedQuery },
+                params: { q: query },
             });
 
             const { items } = response.data;
-            
+
             if (items.length === 0) {
-                setSearchError('No results found');
+                setSearchError('No matching alumni found');
             }
 
-            setSearchResults(items);
+            setSearchResults(items || []);
         } catch (error) {
             console.error('Error during search:', error);
-            setSearchError('Failed to perform search. Please try again.');
+            setSearchError('Unable to complete search. Please try again.');
             setSearchResults([]);
         } finally {
             setIsSearching(false);
         }
-    }, [debouncedQuery, setSearchResults]);
+    }, [setSearchResults, setIsSearching]);
 
-    // Trigger search when debounced query changes
     useEffect(() => {
-        if (debouncedQuery.trim()) {
-            handleSearch();
-        }
-    }, [debouncedQuery, handleSearch]);
+        const debounceTimer = setTimeout(() => {
+            if (searchQuery.trim()) {
+                handleSearch(searchQuery);
+            } else {
+                setSearchResults([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchQuery, handleSearch, setSearchResults]);
 
     const toggleSearch = () => {
         const newSearchState = !isSearchOpen;
         setIsSearchOpen(newSearchState);
         onSearchToggle?.(newSearchState);
-        
-        // Reset search state when closing
+
         if (!newSearchState) {
             setSearchQuery('');
             setSearchResults([]);
             setSearchError(null);
         }
     };
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setDebouncedQuery(searchQuery);
+    //         setSearchError(null);
+    //     }, 300); // Reduced debounce time for better responsiveness
 
-    // Focus on search input when search opens
+    //     return () => clearTimeout(timer);
+    // }, [searchQuery]);
+
+    // const handleSearch = useCallback(async () => {
+    //     if (!debouncedQuery.trim()) {
+    //         setSearchResults([]);
+    //         return;
+    //     }
+
+    //     setIsSearching(true);
+    //     setSearchError(null);
+
+    //     try {
+    //         const response = await axios.get('http://localhost:3001/search', {
+    //             params: { q: debouncedQuery },
+    //         });
+
+    //         const { items } = response.data;
+
+    //         if (items.length === 0) {
+    //             setSearchError('No matching alumni found');
+    //         }
+
+    //         setSearchResults(items || []);
+    //     } catch (error) {
+    //         console.error('Error during search:', error);
+    //         setSearchError('Unable to complete search. Please try again.');
+    //         setSearchResults([]);
+    //     } finally {
+    //         setIsSearching(false);
+    //     }
+    // }, [debouncedQuery, setSearchResults]);
+
+    // useEffect(() => {
+    //     if (debouncedQuery.trim()) {
+    //         handleSearch();
+    //     } else {
+    //         setSearchResults([]); // Clear results when search is empty
+    //     }
+    // }, [debouncedQuery, handleSearch, setSearchResults]);
+
+    // const toggleSearch = () => {
+    //     const newSearchState = !isSearchOpen;
+    //     setIsSearchOpen(newSearchState);
+    //     onSearchToggle?.(newSearchState);
+
+    //     if (!newSearchState) {
+    //         setSearchQuery('');
+    //         setSearchResults([]);
+    //         setSearchError(null);
+    //     }
+    // };
+
     useEffect(() => {
         if (isSearchOpen) {
             searchInputRef.current?.focus();
         }
     }, [isSearchOpen]);
 
-    // Click outside handler
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -112,23 +166,21 @@ const Navbar: React.FC<NavbarProps> = ({
     }, [isSearchOpen]);
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md shadow-md">
-            <div className="container mx-auto px-4 py-3 flex justify-between items-center relative">
-                {/* Mobile menu toggle */}
+        <nav className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
+            <div className="container mx-auto px-4 py-4 flex justify-between items-center relative">
                 <button
                     onClick={() => {
                         const newMobileMenuState = !isMobileMenuOpen;
                         setIsMobileMenuOpen(newMobileMenuState);
                         onMobileSidebarToggle?.(newMobileMenuState);
                     }}
-                    className="lg:hidden text-blue-600 hover:text-blue-800 transition-colors"
+                    className="lg:hidden text-gray-700 hover:text-gray-900 transition-colors"
                     aria-label="Toggle Mobile Menu"
                 >
                     <Menu size={24} />
                 </button>
 
-                {/* Logo */}
-                <div className="text-xl font-bold text-blue-800 
+                <div className="text-xl font-semibold text-gray-900 
                     absolute 
                     left-1/2 
                     transform 
@@ -139,13 +191,11 @@ const Navbar: React.FC<NavbarProps> = ({
                     Alumni Network
                 </div>
 
-                {/* Search and Actions */}
                 <div className="flex items-center space-x-4">
                     <div ref={searchContainerRef} className="relative">
-                        {/* Search Toggle Button */}
                         <button
                             onClick={toggleSearch}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-gray-700 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
                             aria-label={isSearchOpen ? 'Close Search' : 'Open Search'}
                         >
                             {isSearchOpen ? <X size={20} /> : <Search size={20} />}
@@ -154,10 +204,10 @@ const Navbar: React.FC<NavbarProps> = ({
                         <AnimatePresence>
                             {isSearchOpen && (
                                 <motion.div
-                                    initial={{ opacity: 0, y: -20 }}
+                                    initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ type: 'tween' }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
                                     className="
                                         absolute 
                                         top-full 
@@ -171,37 +221,27 @@ const Navbar: React.FC<NavbarProps> = ({
                                         overflow-hidden
                                         z-50
                                         border
+                                        border-gray-200
                                     "
                                 >
-                                    {/* Search Input */}
-                                    <div className="flex items-center px-2 py-2 border-b">
+                                    <div className="flex items-center px-3 py-3 border-b border-gray-100">
                                         {isSearching ? (
-                                            <Loader2 className="animate-spin text-blue-500 mr-2" size={20} />
+                                            <Loader2 className="animate-spin text-gray-400 mr-2" size={20} />
                                         ) : (
                                             <Search size={20} className="text-gray-400 mr-2" />
                                         )}
                                         <input
-                                            ref={searchInputRef} // Add ref to input
+                                            ref={searchInputRef}
                                             type="text"
-                                            placeholder="Search alumni, events..."
+                                            placeholder="Search alumni by name, company, or batch..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="
-                                                flex-grow 
-                                                px-2 
-                                                py-1 
-                                                outline-none 
-                                                text-sm
-                                                focus:ring-2 
-                                                focus:ring-blue-300
-                                            "
-                                            aria-label="Search input"
+                                            className="flex-grow px-2 py-1 outline-none text-sm"
                                         />
                                     </div>
 
-                                    {/* Search Error Message */}
                                     {searchError && (
-                                        <div className="px-4 py-2 bg-red-50 text-red-600 text-sm">
+                                        <div className="px-4 py-3 bg-gray-50 text-gray-600 text-sm border-t border-gray-100">
                                             {searchError}
                                         </div>
                                     )}
@@ -210,16 +250,17 @@ const Navbar: React.FC<NavbarProps> = ({
                         </AnimatePresence>
                     </div>
 
-                    {/* Login Button */}
-                    <button 
+                    <button
                         className="
-                            bg-blue-600 
+                            bg-gray-900 
                             text-white 
                             px-4 
                             py-2 
                             rounded-lg 
-                            hover:bg-blue-700 
+                            hover:bg-gray-800 
                             transition-colors
+                            text-sm
+                            font-medium
                             hidden 
                             lg:block
                         "

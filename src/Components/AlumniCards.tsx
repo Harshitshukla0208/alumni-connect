@@ -1,5 +1,9 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ExternalLink, GraduationCap, Briefcase, Mail } from 'lucide-react';
+import { Card, CardContent, CardHeader } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 
 interface Alumni {
     NAME: string;
@@ -23,70 +27,89 @@ const AlumniCard: React.FC<Alumni> = ({
     BRANCH,
 }) => {
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden w-full max-w-sm mx-auto transition-shadow duration-300">
-            {/* Profile Picture */}
-            <div className="flex justify-center bg-gray-50 pt-6 pb-4">
-                <img
-                    src={PIC}
-                    alt={NAME}
-                    className="rounded-full w-32 h-32 object-cover border-3 border-gray-200 shadow-md"
-                />
-            </div>
-
-            {/* Card Content */}
-            <div className="p-6 text-center">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {NAME}
-                </h3>
-                
-                <div className="space-y-2 mb-4">
-                    <p className="text-gray-600 text-sm flex items-center justify-center gap-2">
-                        <Briefcase className="w-4 h-4 text-gray-500" />
-                        {COMPANY}
-                    </p>
-                    
-                    <div className="flex justify-center items-center gap-2">
-                        <span className="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
-                            <GraduationCap className="w-4 h-4 text-gray-600" />
-                            Batch {BATCH}
-                        </span>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="h-full"
+        >
+            <Card className="overflow-hidden bg-white h-full">
+                <CardHeader className="p-0">
+                    <div className="relative h-32 bg-gradient-to-r from-blue-600 to-blue-500">
+                        <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+                            <img
+                                src='https://media.istockphoto.com/id/1131164548/vector/avatar-5.jpg?s=612x612&w=0&k=20&c=CK49ShLJwDxE4kiroCR42kimTuuhvuo2FH5y_6aSgEo='
+                                alt={NAME}
+                                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover transition-shadow duration-200"
+                            />
+                        </div>
                     </div>
-                </div>
-
-                {/* Field and Branch */}
-                <div className="flex justify-center flex-wrap gap-2 mb-4">
-                    <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
-                        {FIELD}
-                    </span>
-                    {BRANCH && (
-                        <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
-                            {BRANCH}
-                        </span>
-                    )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-center space-x-2">
-                    <a
-                        href={PROFILE}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 inline-flex items-center justify-center bg-gray-800 text-white py-2 rounded-md hover:bg-gray-700 transition-colors"
+                </CardHeader>
+                <CardContent className="pt-20 pb-6 px-6">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                        className="text-center"
                     >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Profile
-                    </a>
-                    
-                    <a
-                        href={`mailto:${EMAIL}`}
-                        className="bg-gray-100 text-gray-700 p-2 rounded-md hover:bg-gray-200 transition-colors"
-                        title="Send Email"
-                    >
-                        <Mail className="w-4 h-4" />
-                    </a>
-                </div>
-            </div>
-        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                            {NAME}
+                        </h3>
+                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-4">
+                            <Briefcase className="w-4 h-4" />
+                            <span className="text-sm">{COMPANY}</span>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2 mb-6">
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                                <GraduationCap className="w-4 h-4" />
+                                Batch {BATCH}
+                            </Badge>
+                            <Badge variant="secondary">
+                                {FIELD}
+                            </Badge>
+                            {BRANCH && (
+                                <Badge variant="secondary">
+                                    {BRANCH}
+                                </Badge>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3 justify-center">
+                            <Button
+                                asChild
+                                variant="default"
+                                className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                            >
+                                <a
+                                    href={PROFILE}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                    Profile
+                                </a>
+                            </Button>
+                            <Button
+                                asChild
+                                variant="outline"
+                                className="transition-colors duration-200"
+                            >
+                                <a
+                                    href={`mailto:${EMAIL}`}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                    Email
+                                </a>
+                            </Button>
+                        </div>
+                    </motion.div>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 };
 
